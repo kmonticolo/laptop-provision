@@ -1,0 +1,63 @@
+---
+  - include_vars: all
+  - hosts: all
+    remote_user: root
+    vars:
+      # created with:
+      # python -c 'import crypt; print crypt.crypt("This is my Password", "$1$SomeSalt$")'
+      password: $1$SomeSalt$UqddPX3r4kH3UL5jq5/ZI.
+      uusername: kmonti
+  
+  - name: create "{{ uusername }}" user
+    user:
+      name: "{{ uusername }}"
+      shell: /bin/bash
+      groups: wheel
+      append: yes
+      generate_ssh_key: yes
+      ssh_key_bits: 2048
+      ssh_key_file: .ssh/id_rsa
+  - name: Expiring password for user "{{ uusername }}"
+    shell: chage -d 0 "{{ uusername }}"
+  
+  - name: install epel-release
+    yum:
+      name: epel-release
+      state: latest
+      
+  - name: install git
+    yum:
+      name: git
+      state: latest
+	  
+  - name: install Puppet
+    yum:
+      name: puppet
+      state: latest
+  
+  - name: upgrade all packages
+    yum:
+      name: '*'
+      state: latest
+	
+  - name: install the 'X Window System' package group
+    yum:
+      name: "@X Window System"
+      state: present
+	  
+  - name: install the 'Gnome desktop' environment group
+    yum:
+      name: "@^gnome-desktop-environment"
+      state: present
+  - name: Remove symlink
+    file:
+      path: "/etc/systemd/system/default.target"
+      state: absent
+  - name: Create symlink
+    file:
+      src: /lib/systemd/system/graphical.target
+      dest: /etc/systemd/system/default.target
+      owner: root
+      group: root
+      state: link
+  
